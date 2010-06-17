@@ -1,0 +1,31 @@
+* Opera UserJS Collection
+
+  This is a collection of UserJS scripts for [[http://opera.com/][Opera web browser]] that
+  I have written or at least modified in big part and I am using.  As
+  a matter of fact, there is only one script now but this collection
+  may grow. ;)
+
+** follow.js
+
+   [[file:follow.js][Link Follow Scrpit]] is a script for following links and form
+   fields.  Upon pressing “f” a label appears on top of every link and
+   form field.  By typing the label you choose (ie. click or bring
+   focus to) the element.
+
+   In the form in the repository script is optimised for Dvorak
+   keyboard layout and uses letters form home row and four letters
+   on the top row accessible by index finger.  This can be changed
+   rather easily.
+
+   The script is based on the script form the [[http://www.uzbl.org][uzbl web browser]]'s
+   script with the same function.
+
+*** TODO
+
+    The script seem to work but there are still some issues and
+    shortcomings.  For instance, the labels are not hidden when window
+    is scrolled, tab changed, etc.  Maybe a timeout could be added?
+
+    Another known problem is with [[http://github.com/][github]] -- pressing “s” seems to
+    focus the “Search” field which interferes with this script if “s”
+    is in the charset.

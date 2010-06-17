@@ -1,15 +1,24 @@
 /*
  * ==UserScript==
- * @name        Link Follow Scrpit
- * @namespace   http://mina86.com/
- * @version     0.9
- * @date        2010-06-17
- * @author      Michal “mina86” Nazarewicz <mina86@mina86.com>
- * @description Shows
- * @include     *
+ * @name         Link Follow Scrpit
+ * @namespace    http://mina86.com/
+ * @version      0.9
+ * @date         2010-06-17
+ * @author       Michal “mina86” Nazarewicz <mina86@mina86.com>
+ * @description  Shows
+ * @description  Shows a label next to links and form fields which one
+ *               can type to use the element.
+ * @ujs:category browser: enhancements
+ * @ujs:download http://github.com/mina86/userjs/raw/master/follow.js
+ * @include      *
  * ==/UserScript==
  *
- * Based partially on follow.js form uzbl-browser.
+ * Inspired by follow.js form uzbl-browser.
+ *
+ * License: Creative Commons Attribution-Share Alike 3.0 Poland Licence
+ *      or: GNU General Public License version 3.0 or at your optional
+ *          any later as published by the Free Software Foundation with
+ *          exception that this can scrpit can be used as UserJS scrpit.
  *
  * TODO: Some pages mess around a lot with the zIndex which lets some
  *       hints in the background.
