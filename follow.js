@@ -234,17 +234,25 @@ key: function(e) {
 
 	/* Handle keyboard input */
 	window.opera.addEventListener('BeforeEvent.keypress', function(e) {
-		var cont = true;
 		e = e.event;
+
+		if (['INPUT', 'TEXTAREA', 'SELECT'].indexOf(e.target.tagName) != -1) {
+			return;
+		}
+
 		if (follow.running) {
-			cont = follow.key(e);
+			if (follow.key(e)) {
+				return;
+			}
 		} else if (e.keyCode == 102 || e.keyCode == 70) {
 			follow.run();
-			cont = !this.running;
+			if (this.running) {
+				return;
+			}
+		} else {
+			return;
 		}
-		if (!cont) {
-			e.preventDefault();
-		}
+		e.preventDefault();
 	}, false);
 
 
