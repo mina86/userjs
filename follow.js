@@ -31,22 +31,47 @@
 
 (function() {
 	var doc = document;
+
+	var style = '.follow-link-hint, .follow-link-prompt, .follow-link-match { display: none; background-color: #B9FF00; border: 2px solid #4A6600; color: black; font-size: 9px; font-weight: bold; line-height: 9px; margin: 0px; width: auto; padding: 1px; position: absolute; z-index: 1000; text-decoration: none; } .follow-link-prompt { background-color: #FFB900; border: 2px solid #664A00; position: fixed; left: 0; bottom: 0; } .follow-link-match { background-color: #00B9FF; border: 2px solid #004A66; content: "\\00A0" }';
+
+
+	/* Add stylesheet */
+	if (style) {
+		doc.addEventListener('DOMContentLoaded', function(e) {
+			style = doc.createTextNode(style);
+			if (!style) return;
+
+			var styleElement = doc.createElement('style');
+			if (!styleElement) return;
+
+			styleElement.setAttribute("type", "text/css");
+			styleElement.appendChild(style);
+
+			var head = doc.getElementsByTagName('head');
+			if (!head.length) return;
+
+			head[0].appendChild(styleElement);
+			style = null;
+		}, false);
+	}
+
+	/* Main object */
 	var follow = {
+retMode: false,
 
 charset: 'htnsueoadify',  // for dvorak
 /* charset: 'jkl;fdsauryt',  // qwerty users may like this */
-/* charset: '0123456789',    // personally I consider digits to
-                             // be the worst opiton */
-hintStyle:   'background-color: #B9FF00; border: 2px solid #4A6600; color: black; font-size: 9px; font-weight: bold; line-height: 9px; margin: 0px; width: auto; padding: 1px; position: absolute; zIndex: 1000; text-decoration: none',
-promptStyle: 'background-color: #FFB900; border: 2px solid #664A00; color: black; font-size: 11px; font-weight: bold; line-height: 9px; margin: 0px; width: auto; padding: 1px; position: absolute; zIndex: 1000; text-decoration: none; left: 0; bottom: 0',
-
+/* charset: '0123456789',    // personally I consider digits to be the worst opiton */
 
 running: false,
 list: null,
+matching: 0,
 prefix: '',
 elements: null,
 prompt: null,
 
+
+/* Start follow script */
 run: function() {
 	this.stop();
 	var list = [], i, j, el, n = 0;
@@ -113,7 +138,7 @@ run: function() {
 		return;
 	}
 
-	/* Assign labels $ hints */
+	/* Assign labels & hints */
 	var elements = doc.createElement('div');
 	if (!elements) {
 		return;
@@ -121,32 +146,48 @@ run: function() {
 
 	var charset = this.charset;
 	var chars = charset.length;
-	var len = 1;
-	for (i = chars; n > i; i *= chars) {
-		++len;
+	if (this.retMode) {
+		var label = function(n) {
+			var label = '';
+			do {
+				label = charset.charAt(n % chars) + label;
+				n = Math.floor(n / chars);
+			} while (n);
+			return label;
+		};
+	} else {
+		var len = 1;
+		for (i = chars; n > i; i *= chars) {
+			++len;
+		}
+
+		var label = function(n) {
+			var label = '', l = len;
+			do {
+				label += charset.charAt(n % chars);
+				n = Math.floor(n / chars);
+			} while (--l);
+			return label;
+		};
 	}
 
 	i = n;
 	do {
-		var label = '', l = len;
-		j = n - i;
-		do {
-			label = charset.charAt(j % chars) + label;
-			j = Math.floor(j / chars);
-		} while (--l);
-
 		el       = list[--i];
 		var hint = doc.createElement('div');
-		hint.setAttribute('style', this.hintStyle + '; display: none; left: ' + el.box[1] + 'px; top: ' + el.box[0] + 'px');
+
+		hint.setAttribute('class', 'follow-link-hint');
+		hint.setAttribute('style', 'left: ' + el.box[1] + 'px; top: ' + el.box[0] + 'px');
 
 		elements.appendChild(hint);
-		el.label = label;
+		el.label = label(n - i - 1);
 		el.hint  = hint;
+		el.match = false;
 	} while (i);
 
 
 	var prompt = doc.createElement('div');
-	prompt.setAttribute('style', this.promptStyle + '; display: none;');
+	prompt.setAttribute('class', 'follow-link-prompt');
 	elements.appendChild(prompt);
 
 	doc.body.appendChild(elements);
@@ -161,48 +202,84 @@ run: function() {
 },
 
 
+/* Check if label matches prefix */
+match: function(label) {
+	var prefix = this.prefix.split(' ');
+	var n = prefix.length;
+	if (!n) return label;
+
+	for (i = 0; i < n - 1; ++i) {
+		if (label == prefix[i]) {
+			return '';
+		}
+	}
+
+	prefix = prefix[i];
+	n = prefix.length;
+	if (!n) return label;
+
+	if (label.substring(0, n) == prefix) {
+		return label.substring(n);
+	}
+
+	return false;
+},
+
+
 /* Update hints */
 update: function() {
 	var list = this.list;
-	var prefix = this.prefix;
-	var len = prefix.length;
 	var count = 0;
 	var el;
 
 	/* Filter hints */
 	for (var i = list.length; i; ) {
 		var item = list[--i];
-		if (item.label.substring(0, len) != prefix) {
+		item.match = false;
+
+		var match = this.match(item.label);
+		if (match === false) {
 			item.hint.style.display = 'none';
-		} else {
-			item.hint.innerText = list[i].label.substring(len);
-			item.hint.style.display = 'inline';
-			++count;
-			el = list[i].element;
+			continue;
 		}
+
+		item.hint.style.display = 'inline';
+		if (match === '') {
+			item.hint.setAttribute('class', 'follow-link-match');
+			item.match = true;
+		} else {
+			item.hint.setAttribute('class', 'follow-link-hint');
+			item.hint.innerText = match;
+		}
+
+		++count;
+		el = list[i].element;
 	}
 
-	if (count != 1) {
+	this.matching = count;
+
+	if (count != 1 || this.retMode) {
 		/* Show prompt */
-		if (prefix == '') {
+		if (this.prefix == '') {
 			this.prompt.style.display = 'none';
 		} else {
 			this.prompt.style.display = 'inline';
-			this.prompt.innerText = prefix;
+			this.prompt.innerText = this.prefix;
 		}
-		return;
+	} else {
+		/* If there is only one matching, enter link */
+		this.stop();
+		this.click(el, false);
 	}
+},
 
-	/* If there is only one matching, enter link */
-	this.stop();
 
+/* Opens maching item(s) */
+click: function(el, background) {
 	var name = el.tagName;
-	if (name == 'A') {
-		el.click();
-		window.location = el.href;
-	} else if (name == 'INPUT') {
-		var type = el.getAttribute('type').toUpperCase();
-		if (type == 'TEXT' || type == 'FILE' || type == 'PASSWORD') {
+	if (name == 'INPUT') {
+		name = el.getAttribute('type').toUpperCase();
+		if (name == 'TEXT' || name == 'FILE' || name == 'PASSWORD') {
 			el.focus();
 			el.select();
 		} else {
@@ -211,9 +288,11 @@ update: function() {
 	} else if (name == 'TEXTAREA' || name == 'SELECT') {
 		el.focus();
 		el.select();
+	} else if (background) {
+		window.open(el.href, '_blank').blur();
 	} else {
 		el.click();
-		window.location = el.href;
+		/* window.location = el.href; */
 	}
 },
 
@@ -230,21 +309,44 @@ stop: function() {
 },
 
 
+/* Ret pressed in retMode */
+ret: function(background) {
+	var n = this.matching;
+	if (n) {
+		background = background || n > 1;
+		var list = this.list;
+		for (var i = list.length; n; ) {
+			if (list[--i].match) {
+				this.click(list[i].element, background);
+				--n;
+			}
+		}
+	}
+	this.stop();
+},
+
+
 /* Handle key */
 key: function(e) {
+	var prefix = this.prefix;
 	var kc = e.keyCode;
 	if (kc == 27) {
 		this.stop();
 	} else if (kc == 8) {
-		if (this.prefix == '') {
+		if (prefix == '') {
 			this.stop();
 		} else {
-			this.prefix = this.prefix.substring(0, this.prefix.length - 1);
+			this.prefix = prefix.substring(0, prefix.length - 1);
 			this.update();
 		}
 	} else if (this.charset.indexOf(String.fromCharCode(kc)) != -1) {
 		this.prefix += String.fromCharCode(kc);
 		this.update();
+	} else if (kc == 32 && prefix != '' && prefix.substring(prefix.length - 1) != ' ') {
+		this.prefix += ' ';
+		this.update();
+	} else if (this.retMode && (kc == 10 || kc == 13)) {
+		this.ret(false);
 	} else {
 		return true;
 	}
