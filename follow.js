@@ -266,13 +266,4 @@ key: function(e) {
 		}
 		e.preventDefault();
 	}, false);
-
-
-
-	/* Make onlick-links "clickable" */
-	HTMLElement.prototype.click = function() {
-		if (typeof this.onclick == 'function') {
-			this.onclick({ type: 'click' });
-		}
-	};
 })();
