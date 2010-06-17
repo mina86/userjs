@@ -23,7 +23,13 @@
 (function() {
 	var doc = document;
 	var follow = {
-charset: 'htnsueoadify',
+
+charset: 'htnsueoadify',  // for dvorak
+/* charset: 'jkl;fdsauryt',  // qwerty users may like this */
+/* charset: '0123456789',    // personally I consider digits to
+                             // be the worst opiton */
+hintStyle:   'background-color: #B9FF00; border: 2px solid #4A6600; color: black; font-size: 9px; font-weight: bold; line-height: 9px; margin: 0px; width: auto; padding: 1px; position: absolute; zIndex: 1000; text-decoration: none',
+promptStyle: 'background-color: #FFB900; border: 2px solid #664A00; color: black; font-size: 11px; font-weight: bold; line-height: 9px; margin: 0px; width: auto; padding: 1px; position: absolute; zIndex: 1000; text-decoration: none; left: 0; bottom: 0',
 
 
 running: false,
@@ -34,22 +40,62 @@ prompt: null,
 
 run: function() {
 	this.stop();
-	var list = [], i, j, el;
+	var list = [], i, j, el, n = 0;
+
+	var wLeft   = window.pageXOffset;
+	var wTop    = window.pageYOffset;
+	var wRight  = wLeft + window.innerWidth;
+	var wBottom = wTop  + window.innerHeight;
+
+	var getVisibleBox = function(el) {
+		var top    = el.offsetTop;
+		var left   = el.offsetLeft;
+		for (var o = el; (o = o.offsetParent); ) {
+			top  += o.offsetTop;
+			left += o.offsetLeft;
+		}
+		var right  = left + el.offsetWidth;
+		var bottom = top  + el.offsetHeight;
+
+		if ((top    >= wBottom) || (left   >= wRight ) ||
+			(bottom <= wTop   ) || (right  <= wLeft  )) {
+			return false;
+		}
+
+		for (; el != doc; el = el.parentNode) {
+			if (!el || !el.parentNode || (el.style && (el.style.display == 'none' || el.style.visibility == 'hidden'))) {
+				return false;
+			}
+		}
+
+		if (top    < wTop   ) top = wTop;
+		if (left   < wLeft  ) left = wLeft;
+		if (right  > wRight ) right = wRight;
+		if (bottom > wBottom) bottom = wBottom;
+
+		return [top, left, right, bottom];
+	};
 
 	/* Get elements */
-	for (i = 0; i < doc.links.length; ++i) {
-		el = doc.links[i];
-		if (el.isInView()) {
-			list[list.length] = { element: el };
+	for (i = doc.links.length; i; ) {
+		el = doc.links[--i];
+		var box = getVisibleBox(el);
+		if (box) {
+			list[n++] = { element: el, box : box };
 		}
 	}
 
-	for (i = 0; i < doc.forms.length; ++i) {
-		var els = doc.forms[i].elements;
-		for (j = 0; j < els.length; ++j) {
-			el = els[j];
-			if (['INPUT', 'TEXTAREA', 'SELECT'].indexOf(el.tagName) != -1 && el.isInView()) {
-				list[list.length] = { element: el };
+	for (i = doc.forms.length; i; ) {
+		var els = doc.forms[--i].elements;
+		for (j = els.length; j; ) {
+			el = els[--j];
+			if (['INPUT', 'TEXTAREA', 'SELECT'].indexOf(el.tagName) == -1) {
+				continue;
+			}
+
+			var box = getVisibleBox(el);
+			if (box) {
+				list[n++] = { element: el, box : box };
 			}
 		}
 	}
@@ -66,67 +112,32 @@ run: function() {
 
 	var charset = this.charset;
 	var chars = charset.length;
-	var n = list.length, len = 1;
+	var len = 1;
 	for (i = chars; n > i; i *= chars) {
 		++len;
 	}
 
-	for (i = 0; i < n; ++i) {
+	i = n;
+	do {
 		var label = '', l = len;
-		j = i;
+		j = n - i;
 		do {
 			label = charset.charAt(j % chars) + label;
 			j = Math.floor(j / chars);
 		} while (--l);
 
-		var pos  = list[i].element.getBoundingBox();
+		el       = list[--i];
 		var hint = doc.createElement('div');
-		hint.style.display = 'none';
-		hint.style.backgroundColor = '#B9FF00';
-		hint.style.border = '2px solid #4A6600';
-		hint.style.color = 'black';
-		hint.style.fontSize = '9px';
-		hint.style.fontWeight = 'bold';
-		hint.style.lineHeight = '9px';
-		hint.style.margin = '0px';
-		hint.style.width = 'auto'; /* fix broken rendering on w3schools.com */
-		hint.style.padding = '1px';
-		hint.style.position = 'absolute';
-		hint.style.zIndex = '1000';
-		/* hint.style.textTransform = 'uppercase'; */
-		hint.style.left = pos[1] + 'px';
-		hint.style.top = pos[0] + 'px';
-		/*
-		  var img = el.getElementsByTagName('img');
-		  if (img.length > 0) {
-		  hint.style.top = pos[1] + img[0].height / 2 - 6 + 'px';
-		  }
-		*/
-		hint.style.textDecoration = 'none';
-		/* hint.style.webkitBorderRadius = '6px'; */
+		hint.setAttribute('style', this.hintStyle + '; display: none; left: ' + el.box[1] + 'px; top: ' + el.box[0] + 'px');
 
 		elements.appendChild(hint);
-		list[i].label = label;
-		list[i].hint  = hint;
-	}
+		el.label = label;
+		el.hint  = hint;
+	} while (i);
 
 
 	var prompt = doc.createElement('div');
-	prompt.style.display = 'none';
-	prompt.style.backgroundColor = '#FFB900';
-	prompt.style.border = '2px solid #664A00';
-	prompt.style.color = 'black';
-	prompt.style.fontSize = '11px';
-	prompt.style.fontWeight = 'bold';
-	prompt.style.lineHeight = '9px';
-	prompt.style.margin = '0px';
-	prompt.style.width = 'auto'; /* fix broken rendering on w3schools.com */
-	prompt.style.padding = '1px';
-	prompt.style.position = 'absolute';
-	prompt.style.zIndex = '1000';
-	/* prompt.style.textTransform = 'uppercase'; */
-	prompt.style.left = '0';
-	prompt.style.bottom = '0';
+	prompt.setAttribute('style', this.promptStyle + '; display: none;');
 	elements.appendChild(prompt);
 
 	doc.body.appendChild(elements);
@@ -150,12 +161,13 @@ update: function() {
 	var el;
 
 	/* Filter hints */
-	for (var i = 0; i < list.length; ++i) {
-		if (list[i].label.substring(0, len) != prefix) {
-			list[i].hint.style.display = 'none';
+	for (var i = list.length; i; ) {
+		var item = list[--i];
+		if (item.label.substring(0, len) != prefix) {
+			item.hint.style.display = 'none';
 		} else {
-			list[i].hint.innerText = list[i].label.substring(len);
-			list[i].hint.style.display = 'inline';
+			item.hint.innerText = list[i].label.substring(len);
+			item.hint.style.display = 'inline';
 			++count;
 			el = list[i].element;
 		}
@@ -262,37 +274,5 @@ key: function(e) {
 		if (typeof this.onclick == 'function') {
 			this.onclick({ type: 'click' });
 		}
-	};
-
-	/* Calculate element position to draw the hint.  Pretty accurate
-	 * but on fails in some very fancy cases */
-	HTMLElement.prototype.getBoundingBox = function() {
-		var up     = this.offsetTop;
-		var left   = this.offsetLeft;
-		var width  = this.offsetWidth;
-		var height = this.offsetHeight;
-		for (var el = this; (el = el.offsetParent); ) {
-			up   += el.offsetTop;
-			left += el.offsetLeft;
-		}
-		return [up, left, width, height];
-	};
-
-	/* Calculate if an element is on the viewport and visible. */
-	HTMLElement.prototype.isInView = function() {
-		var box    = this.getBoundingBox();
-		if (( box[0]           >= (window.pageYOffset + window.innerHeight)) ||
-			( box[1]           >= (window.pageXOffset + window.innerWidth))  ||
-			((box[0] + box[3]) <=  window.pageYOffset) ||
-			((box[1] + box[2]) <=  window.pageXOffset)) {
-			return false;
-		}
-
-		for (var el = this; el != doc; el = el.parentNode) {
-			if (!el || !el.parentNode || (el.style && (el.style.display == 'none' || el.style.visibility == 'hidden'))) {
-				return false;
-			}
-		}
-		return true;
 	};
 })();
