@@ -32,7 +32,7 @@
 (function() {
 	var doc = document;
 
-	var style = '.follow-link-hint, .follow-link-prompt, .follow-link-match { display: none; background-color: #B9FF00; border: 2px solid #4A6600; color: black; font-size: 9px; font-weight: bold; line-height: 9px; margin: 0px; width: auto; padding: 1px; position: absolute; z-index: 1000; text-decoration: none; } .follow-link-prompt { background-color: #FFB900; border: 2px solid #664A00; position: fixed; left: 0; bottom: 0; } .follow-link-match { background-color: #00B9FF; border: 2px solid #004A66; content: "\\00A0" }';
+	var style = '.follow-link-hide, .follow-link-hint, .follow-link-prompt, .follow-link-match { display: inline; background-color: #B9FF00; border: 2px solid #4A6600; color: black; font-size: 9px; font-weight: bold; line-height: 9px; margin: 0px; width: auto; padding: 1px; position: absolute; z-index: 1000; text-decoration: none; } .follow-link-prompt { background-color: #FFB900; border: 2px solid #664A00; position: fixed; left: 0; bottom: 0; } .follow-link-match { background-color: #00B9FF; border: 2px solid #004A66; content: "\\00A0" } .follow-link-hide { display: none }';
 
 
 	/* Add stylesheet */
@@ -74,7 +74,7 @@ prompt: null,
 /* Start follow script */
 run: function() {
 	this.stop();
-	var list = [], i, j, el, n = 0;
+	var list = [], i, j, el, item, n = 0;
 
 	var wLeft   = window.pageXOffset;
 	var wTop    = window.pageYOffset;
@@ -113,9 +113,26 @@ run: function() {
 	/* Get elements */
 	for (i = doc.links.length; i; ) {
 		el = doc.links[--i];
+
+		var href = el.href;
+		if (!href || href == location.href) {
+			continue;
+		}
+
 		var box = getVisibleBox(el);
-		if (box) {
-			list[n++] = { element: el, box : box };
+		if (!box) {
+			continue;
+		}
+
+		for (j = 0; j < n && list[j][0].el.href != href; ++j) {
+			/* nop */
+		}
+
+		item = { el: el, box: box };
+		if (j == n) {
+			list[n++] = [ item ];
+		} else {
+			list[j][list[j].length] = item;
 		}
 	}
 
@@ -129,7 +146,7 @@ run: function() {
 
 			var box = getVisibleBox(el);
 			if (box) {
-				list[n++] = { element: el, box : box };
+				list[n++] = [ { el: el, box: box } ];
 			}
 		}
 	}
@@ -148,26 +165,30 @@ run: function() {
 	var chars = charset.length;
 	i = n;
 	do {
-		el       = list[--i];
-		var hint = doc.createElement('div');
+		item = list[--i];
 
-		hint.setAttribute('class', 'follow-link-hint');
-		hint.setAttribute('style', 'left: ' + el.box[1] + 'px; top: ' + el.box[0] + 'px');
-
-		elements.appendChild(hint);
-
-		var num = i, label = '', m = 1, r = 0;
+		var label = '', m = 1, r = 0;
+		j = i;
 		do {
-			var u = num % chars;
-			num = Math.floor(num / chars);
+			var u = j % chars;
+			j = Math.floor(j / chars);
 			label += charset.charAt(chars - u - 1);
 			r += u * m;
 			m *= chars;
 		} while (m + r < n);
 
-		el.label = label;;
-		el.hint  = hint;
-		el.match = false;
+		item.label = label;
+		item.match = false;
+
+		j = item.length;
+		do {
+			el = item[--j];
+			var hint = doc.createElement('div');
+			hint.setAttribute('class', 'follow-link-hint');
+			hint.setAttribute('style', 'left: ' + el.box[1] + 'px; top: ' + el.box[0] + 'px');
+			elements.appendChild(hint);
+			el.hint  = hint;
+		} while (j);
 	} while (i);
 
 
@@ -219,26 +240,27 @@ update: function() {
 
 	/* Filter hints */
 	for (var i = list.length; i; ) {
-		var item = list[--i];
-		item.match = false;
-
-		var match = this.match(item.label);
+		var item = list[--i], match = this.match(item.label), class;
 		if (match === false) {
-			item.hint.style.display = 'none';
-			continue;
-		}
-
-		item.hint.style.display = 'inline';
-		if (match === '') {
-			item.hint.setAttribute('class', 'follow-link-match');
+			item.match = false;
+			class = 'follow-link-hide';
+			match = '';
+		} else if (match === '') {
 			item.match = true;
+			class = 'follow-link-match';
+			++count;
+			el = item[0].el;
 		} else {
-			item.hint.setAttribute('class', 'follow-link-hint');
-			item.hint.innerText = match;
+			item.match = false;
+			class = 'follow-link-hint';
 		}
 
-		++count;
-		el = list[i].element;
+		var j = item.length;
+		do {
+			var e = item[--j];
+			e.hint.setAttribute('class', class);
+			e.hint.innerText = match;
+		} while (j);
 	}
 
 	this.matching = count;
@@ -302,7 +324,7 @@ ret: function(background) {
 		var list = this.list;
 		for (var i = list.length; n; ) {
 			if (list[--i].match) {
-				this.click(list[i].element, background);
+				this.click(list[i][0].el, background);
 				--n;
 			}
 		}
