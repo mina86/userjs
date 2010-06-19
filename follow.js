@@ -146,31 +146,6 @@ run: function() {
 
 	var charset = this.charset;
 	var chars = charset.length;
-	if (this.retMode) {
-		var label = function(n) {
-			var label = '';
-			do {
-				label = charset.charAt(n % chars) + label;
-				n = Math.floor(n / chars);
-			} while (n);
-			return label;
-		};
-	} else {
-		var len = 1;
-		for (i = chars; n > i; i *= chars) {
-			++len;
-		}
-
-		var label = function(n) {
-			var label = '', l = len;
-			do {
-				label += charset.charAt(n % chars);
-				n = Math.floor(n / chars);
-			} while (--l);
-			return label;
-		};
-	}
-
 	i = n;
 	do {
 		el       = list[--i];
@@ -180,7 +155,17 @@ run: function() {
 		hint.setAttribute('style', 'left: ' + el.box[1] + 'px; top: ' + el.box[0] + 'px');
 
 		elements.appendChild(hint);
-		el.label = label(n - i - 1);
+
+		var num = i, label = '', m = 1, r = 0;
+		do {
+			var u = num % chars;
+			num = Math.floor(num / chars);
+			label += charset.charAt(chars - u - 1);
+			r += u * m;
+			m *= chars;
+		} while (m + r < n);
+
+		el.label = label;;
 		el.hint  = hint;
 		el.match = false;
 	} while (i);
