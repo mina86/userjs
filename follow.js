@@ -32,7 +32,7 @@
 (function() {
 	var doc = document;
 
-	var style = '.follow-link-hide, .follow-link-hint, .follow-link-prompt, .follow-link-match { display: inline; background-color: #B9FF00; border: 2px solid #4A6600; color: black; font-size: 9px; font-weight: bold; line-height: 9px; margin: 0px; width: auto; padding: 1px; position: absolute; z-index: 1000; text-decoration: none; } .follow-link-prompt { background-color: #FFB900; border: 2px solid #664A00; position: fixed; left: 0; bottom: 0; } .follow-link-match { background-color: #00B9FF; border: 2px solid #004A66; content: "\\00A0" } .follow-link-hide { display: none }';
+	var style = '.follow-link-hide, .follow-link-hint, .follow-link-prompt, .follow-link-match { letter-spacing: 0.1em; display: inline; background-color: #B9FF00; border: 1px solid #4A6600; color: black; font-size: 10px; font-weight: bold; line-height: 1em; margin: 0px; width: auto; padding: 1px; position: absolute; z-index: 1000; text-decoration: none; } .follow-link-prompt { background-color: #FFB900; border-color: #664A00; position: fixed; left: 0; bottom: 0; } .follow-link-match { background-color: #00B9FF; border-color: #004A66; content: "\\00A0" } .follow-link-hide { display: none }';
 
 
 	/* Add stylesheet */
@@ -59,7 +59,8 @@
 	var follow = {
 retMode: false,
 
-charset: 'htnsueoadify',  // for dvorak
+charset: 'htnsdgfcrlmwvzb/-',  // for dvorak, only right hand
+/* charset: 'htnsueoadify',  // for dvorak */
 /* charset: 'jkl;fdsauryt',  // qwerty users may like this */
 /* charset: '0123456789',    // personally I consider digits to be the worst opiton */
 
