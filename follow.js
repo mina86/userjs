@@ -59,7 +59,7 @@
 	var follow = {
 retMode: false,
 
-charset: 'htnsdgfcrlmwvzb/-',  // for dvorak, only right hand
+charset: 'htnsdgfcrlmwvzb-/',  // for dvorak, only right hand
 /* charset: 'htnsueoadify',  // for dvorak */
 /* charset: 'jkl;fdsauryt',  // qwerty users may like this */
 /* charset: '0123456789',    // personally I consider digits to be the worst opiton */
@@ -169,11 +169,11 @@ run: function() {
 		item = list[--i];
 
 		var label = '', m = 1, r = 0;
-		j = i;
+		j = n - i - 1;
 		do {
 			var u = j % chars;
 			j = Math.floor(j / chars);
-			label += charset.charAt(chars - u - 1);
+			label += charset.charAt(u);
 			r += u * m;
 			m *= chars;
 		} while (m + r < n);
