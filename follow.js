@@ -27,42 +27,43 @@
  *       good
  * TODO: Still some links can't be followed/unexpected things
  *       happen. Blame some freaky webdesigners. ;)
+ * TODO: retMode always opens in background -- allow oppening in
+ *       foreground in a new tab.
+ * TODO: a normal mode but with opening in new tab (in background).
+ *       Switching to retMode requires enter to be pressed.
+ * TODO: Shift does not work with special characters.
  */
 
 (function() {
+	/* Configuration */
+
+
+	var retMode = false;
+
+	/* For dvorak, only right hand */
+	var charset = 'htnsdgfcrlmwvzb-/@';
+	/* For dvorak, both hands */
+	/* var charset = 'htnsueoadgfipycrl.,\'mbkxwvzjq;-/@'; */
+
+	/* For qwerty, only right hand */
+	/* var charset = 'jkl;huyiopmn,./\'[]'; */
+	/* For qwerty, both hands */
+	/* var charset = 'jkl;fdsahuygrtiopewqmnvb,./cxz\'[]'; */
+
+	/* Digits (the one thing that makes the least sense) */
+	/* var charset = '0123456789';
+
+
+	/* Alternativell you can set it to false and copy this to a user CSS. */
+	/* var style = '.follow-link-hide, .follow-link-hint, .follow-link-match, .follow-link-prompt { letter-spacing: 0.1em; display: inline; background-color: #B9FF00; border: 1px solid #4A6600; color: black; font-size: 10px; font-weight: bold; line-height: 1em; margin: 0px; width: auto; padding: 1px; position: absolute; z-index: 1000; text-decoration: none; } .follow-link-prompt { background-color: #FFB900; border-color: #664A00; position: fixed; left: 0; bottom: 0; } .follow-link-match { background-color: #00B9FF; border-color: #004A66; content: "\\00A0" } .follow-link-hide { display: none } .follow-link-retmode .follow-link-prompt { background-color: #f00 } .follow-link-retmode .follow-link-hint { background-color: #FF0 }'; */
+	var style = false;
+
+
+	/* No need to touch avything below. */
 	var doc = document;
-
-	var style = '.follow-link-hide, .follow-link-hint, .follow-link-prompt, .follow-link-match { letter-spacing: 0.1em; display: inline; background-color: #B9FF00; border: 1px solid #4A6600; color: black; font-size: 10px; font-weight: bold; line-height: 1em; margin: 0px; width: auto; padding: 1px; position: absolute; z-index: 1000; text-decoration: none; } .follow-link-prompt { background-color: #FFB900; border-color: #664A00; position: fixed; left: 0; bottom: 0; } .follow-link-match { background-color: #00B9FF; border-color: #004A66; content: "\\00A0" } .follow-link-hide { display: none }';
-
-
-	/* Add stylesheet */
-	if (style) {
-		doc.addEventListener('DOMContentLoaded', function(e) {
-			style = doc.createTextNode(style);
-			if (!style) return;
-
-			var styleElement = doc.createElement('style');
-			if (!styleElement) return;
-
-			styleElement.setAttribute("type", "text/css");
-			styleElement.appendChild(style);
-
-			var head = doc.getElementsByTagName('head');
-			if (!head.length) return;
-
-			head[0].appendChild(styleElement);
-			style = null;
-		}, false);
-	}
 
 	/* Main object */
 	var follow = {
-retMode: false,
-
-charset: 'htnsdgfcrlmwvzb-/',  // for dvorak, only right hand
-/* charset: 'htnsueoadify',  // for dvorak */
-/* charset: 'jkl;fdsauryt',  // qwerty users may like this */
-/* charset: '0123456789',    // personally I consider digits to be the worst opiton */
 
 running: false,
 list: null,
@@ -70,6 +71,8 @@ matching: 0,
 prefix: '',
 elements: null,
 prompt: null,
+retMode: false,
+background: false,
 
 
 /* Start follow script */
@@ -158,11 +161,10 @@ run: function() {
 
 	/* Assign labels & hints */
 	var elements = doc.createElement('div');
-	if (!elements) {
-		return;
+	if (this.retMode) {
+		elements.setAttribute('class', 'follow-link-retmode');
 	}
 
-	var charset = this.charset;
 	var chars = charset.length;
 	i = n;
 	do {
@@ -267,17 +269,11 @@ update: function() {
 	this.matching = count;
 
 	if (count != 1 || this.retMode) {
-		/* Show prompt */
-		if (this.prefix == '') {
-			this.prompt.style.display = 'none';
-		} else {
-			this.prompt.style.display = 'inline';
-			this.prompt.innerText = this.prefix;
-		}
+		this.prompt.innerText = this.prefix === '' ? '\xA0' : this.prefix;
 	} else {
 		/* If there is only one matching, enter link */
 		this.stop();
-		this.click(el, false);
+		this.click(el, this.background);
 	}
 },
 
@@ -340,6 +336,7 @@ key: function(e) {
 	var kc = e.keyCode;
 	if (kc == 27) {
 		this.stop();
+
 	} else if (kc == 8) {
 		if (prefix == '') {
 			this.stop();
@@ -347,14 +344,25 @@ key: function(e) {
 			this.prefix = prefix.substring(0, prefix.length - 1);
 			this.update();
 		}
-	} else if (this.charset.indexOf(String.fromCharCode(kc)) != -1) {
-		this.prefix += String.fromCharCode(kc);
-		this.update();
-	} else if (kc == 32 && prefix != '' && prefix.substring(prefix.length - 1) != ' ') {
-		this.prefix += ' ';
+
+	} else if (charset.indexOf(String.fromCharCode(kc).toLowerCase()) != -1) {
+		this.background = e.shiftKey;
+		this.prefix += String.fromCharCode(kc).toLowerCase();
 		this.update();
 	} else if (this.retMode && (kc == 10 || kc == 13)) {
 		this.ret(false);
+	} else if (kc != 32) {
+		return true;
+	} else if (prefix == '') {
+		this.retMode = !this.retMode;
+		if (this.retMode) {
+			this.elements.setAttribute('class', 'follow-link-retmode');
+		} else {
+			this.elements.removeAttribute('class');
+		}
+	} else if (this.retMode && prefix.substring(prefix.length - 1) != ' ') {
+		this.prefix += ' ';
+		this.update();
 	} else {
 		return true;
 	}
@@ -363,11 +371,34 @@ key: function(e) {
 	};
 
 
+	/* Add stylesheet */
+	if (style) {
+		doc.addEventListener('DOMContentLoaded', function(e) {
+			style = doc.createTextNode(style);
+			if (!style) return;
+
+			var styleElement = doc.createElement('style');
+			if (!styleElement) return;
+
+			styleElement.setAttribute("type", "text/css");
+			styleElement.appendChild(style);
+
+			var head = doc.getElementsByTagName('head');
+			if (!head.length) return;
+
+			head[0].appendChild(styleElement);
+			style = null;
+		}, false);
+	}
+
+
 	/* Handle keyboard input */
 	window.opera.addEventListener('BeforeEvent.keypress', function(e) {
 		e = e.event;
 
-		if (['INPUT', 'TEXTAREA', 'SELECT'].indexOf(e.target.tagName) != -1) {
+		if (e.altKey || e.ctrlKey || e.metaKey || e.keyCode != e.which ||
+		    ['INPUT', 'TEXTAREA', 'SELECT'].indexOf(e.target.tagName) != -1) {
+			if (follow.running) follow.stop();
 			return;
 		}
 
@@ -376,6 +407,7 @@ key: function(e) {
 				return;
 			}
 		} else if (e.keyCode == 102 || e.keyCode == 70) {
+			follow.retMode = e.shiftKey == !retMode;
 			follow.run();
 			if (this.running) {
 				return;
@@ -384,5 +416,13 @@ key: function(e) {
 			return;
 		}
 		e.preventDefault();
+	}, false);
+
+
+	/* Cancel on click */
+	window.opera.addEventListener('BeforeEvent.click', function (e) {
+		if (follow.running) {
+			follow.stop();
+		}
 	}, false);
 })();
