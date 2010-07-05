@@ -350,7 +350,7 @@ key: function(e) {
 		this.prefix += String.fromCharCode(kc).toLowerCase();
 		this.update();
 	} else if (this.retMode && (kc == 10 || kc == 13)) {
-		this.ret(false);
+		this.ret(this.retMode);
 	} else if (kc != 32) {
 		return true;
 	} else if (prefix == '') {
