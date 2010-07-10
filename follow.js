@@ -23,40 +23,43 @@
  * TODO: Some pages mess around a lot with the zIndex which lets some
  *       hints in the background.
  * TODO: Some positions are not calculated correctly (mostly because
- *       of uber-fancy-designed-webpages. Basic HTML and CSS works
- *       good
+ *       of uber-fancy-designed-webpages). Basic HTML and CSS works
+ *       good.
  * TODO: Still some links can't be followed/unexpected things
  *       happen. Blame some freaky webdesigners. ;)
+ * TODO: At <http://github.com/> pressing “s” focuses the “Search”
+ *       field which interferes with this script if “s” is in the
+ *       charset.
  * TODO: retMode always opens in background -- allow oppening in
  *       foreground in a new tab.
  * TODO: a normal mode but with opening in new tab (in background).
  *       Switching to retMode requires enter to be pressed.
  * TODO: Shift does not work with special characters.
+ *
+ * See documentation at <http://github.com/mina86/userjs>.
  */
 
 (function() {
 	/* Configuration */
+	var retMode = false, charset, style = false;
 
-
-	var retMode = false;
 
 	/* For dvorak, only right hand */
-	var charset = 'htnsdgfcrlmwvzb-/@';
+	/* charset = 'htnsdgfcrlmwvzb-/@'; */
 	/* For dvorak, both hands */
-	/* var charset = 'htnsueoadgfipycrl.,\'mbkxwvzjq;-/@'; */
+	/* charset = 'htnsueoadgfipycrl.,\'mbkxwvzjq;-/@'; */
 
 	/* For qwerty, only right hand */
-	/* var charset = 'jkl;huyiopmn,./\'[]'; */
+	charset = 'jkl;huyiopmn,./\'[]';
 	/* For qwerty, both hands */
-	/* var charset = 'jkl;fdsahuygrtiopewqmnvb,./cxz\'[]'; */
+	/* charset = 'jkl;fdsahuygrtiopewqmnvb,./cxz\'[]'; */
 
 	/* Digits (the one thing that makes the least sense) */
-	/* var charset = '0123456789';
+	/* charset = '0123456789'; */
 
 
-	/* Alternativell you can set it to false and copy this to a user CSS. */
-	/* var style = '.follow-link-hide, .follow-link-hint, .follow-link-match, .follow-link-prompt { letter-spacing: 0.1em; display: inline; background-color: #B9FF00; border: 1px solid #4A6600; color: black; font-size: 10px; font-weight: bold; line-height: 1em; margin: 0px; width: auto; padding: 1px; position: absolute; z-index: 1000; text-decoration: none; } .follow-link-prompt { background-color: #FFB900; border-color: #664A00; position: fixed; left: 0; bottom: 0; } .follow-link-match { background-color: #00B9FF; border-color: #004A66; content: "\\00A0" } .follow-link-hide { display: none } .follow-link-retmode .follow-link-prompt { background-color: #f00 } .follow-link-retmode .follow-link-hint { background-color: #FF0 }'; */
-	var style = false;
+	/* Alternativell you can leave it commented and copy this to a user CSS. */
+	style = 'div.follow-link-hide, div.follow-link-hint, div.follow-link-match, div.follow-link-prompt { letter-spacing: 0.1em !important; display: inline !important; background-color: #B9FF00 !important; border: 1px solid #4A6600 !important; color: black !important; font-size: 10px !important; font-weight: bold !important; line-height: 1em !important; margin: 0px !important; width: auto !important; padding: 1px !important; position: absolute !important; z-index: 1000 !important; text-decoration: none !important; } div.follow-link-prompt { background-color: #FFB900 !important; border-color: #664A00 !important; position: fixed !important; left: 0 !important; bottom: 0 !important; } div.follow-link-match { background-color: #00B9FF !important; border-color: #004A66 !important; content: "\\00A0" !important; } div.follow-link-hide { display: none !important; } div.follow-link-retmode div.follow-link-prompt { background-color: #f00 !important; } div.follow-link-retmode div.follow-link-hint { background-color: #FF0 !important; }'
 
 
 	/* No need to touch avything below. */

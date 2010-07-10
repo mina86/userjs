@@ -10,14 +10,16 @@
  * @ujs:download http://github.com/mina86/userjs/raw/master/tip.js
  * @include      *
  * ==/UserScript==
+ *
+ * See documentation at <http://github.com/mina86/userjs>.
  */
 
 (function() {
 	/* Configuration */
 
-	/* Alternativell you can set it to false and copy this to a user CSS. */
-	/* var style = '#tool-tip-text, #tool-tip-text tr, #tool-tip-text td, #tool-tip-text th { margin: 0; padding: 0; border: 0 none #000; color: #000; font-weight: normal; border-collapse: collapse; text-decoration: none; background-color: #F90; } #tool-tip-text { display: none; border: 1px solid #664A00; width: auto; z-index: 1000; position: fixed; left: 0; bottom: 0; } #tool-tip-text td { padding: 1px; font-size: 10px; } #tool-tip-text th { padding: 1px; font-size: 8px; background-color: #9F0; }'; */
 	var style = false;
+	/* Alternativell you can leave it commented and copy this to a user CSS. */
+	style = '#tool-tip-text, #tool-tip-text tr, #tool-tip-text td, #tool-tip-text th { margin: 0 !important; padding: 0 !important; border: 0 none #000 !important; color: #000 !important; font-weight: normal !important; border-collapse: collapse !important; text-decoration: none !important; background-color: #F90 !important; } #tool-tip-text { display: none; border: 1px solid #664A00 !important; width: auto !important; z-index: 1000 !important; position: fixed !important; left: 0 !important; bottom: 0 !important; } #tool-tip-text td { padding: 1px !important; font-size: 10px !important; } #tool-tip-text th { padding: 1px !important; font-size: 8px !important; background-color: #9F0 !important; }';
 
 
 	/* No need to touch avything below. */

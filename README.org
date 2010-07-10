@@ -12,23 +12,24 @@
    form field.  By typing the label you choose (ie. click or bring
    focus to) the element.
 
-   In the form in the repository script is optimised for Dvorak
-   keyboard layout and uses letters form home row and four letters
-   on the top row accessible by index finger.  This can be changed
-   rather easily.
-
    The script is based on the script form the [[http://www.uzbl.org][uzbl web browser]]'s
    script with the same function.
 
-*** TODO
+*** Installation & configuration
 
-    The script seem to work but there are still some issues and
-    shortcomings.  For instance, the labels are not hidden when window
-    is scrolled, tab changed, etc.  Maybe a timeout could be added?
+    Refer to the “Installation & configure” section of this document
+    at the end.  Besides what's written there, [[file:follow.js][Link Follow Scrpit]] has
+    some other configuration options as well:
 
-    Another known problem is with [[http://github.com/][github]] -- pressing “s” seems to
-    focus the “Search” field which interferes with this script if “s”
-    is in the charset.
+    Most importantly, you need to configure the set of characters you
+    want the script to use -- it is specified by a “charset” variable
+    near the beginning of the script.  By default it is set to use
+    only right side of a keyboard in qwerty layout.  You may easily
+    change the characters by uncommenting one of the example lines or
+    setting it by yourself.
+
+    There is also a “retMode” which turns the “retMode” by default.
+    If you like it to be on by default set this variable to ”true”.
 
 ** tip.js
 
@@ -41,3 +42,27 @@
    It is also more functional in the sense that it is not limited to
    showing only address of a link and title of an element.  It also
    shows an alternative text and source of images.
+
+** Installation & configuration
+
+   To install the script simply copy the .js file to your UserJS
+   directory.  You may find UJSManager handy in installation.  For
+   more information about UserJS in Opera refer to documentation and
+   Google.
+
+   After this is done, the script should start working smoothly.
+   Usually, some configuration is possible via changing the script.
+   If that's the case, there will be several variables at the
+   beginning of the script that you can safely modify.  Refer to
+   script's source code as well as documentation in this document for
+   more information.
+
+   Script that use custom styles have “style” variable with the styles
+   included.  You can modify it as you want to change the appearance
+   of elements used by the script.
+
+   Alternatively, you can just comment the whole line out and copy the
+   style to your UserCSS file.  Be sure to change “\\” inside to
+   a singe “\” (for instance in “content: "\\00A0"” in [[file:follow.js][Link Follow
+   Scrpit]]).  The style has “!important” tags included so you should
+   not need to worry about
