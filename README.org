@@ -2,7 +2,7 @@
 
   This is a collection of UserJS scripts for [[http://opera.com/][Opera web browser]] that
   I have written or at least modified in big part and I am using.  As
-  a matter of fact, there is only one script now but this collection
+  a matter of fact, there are only two script now but this collection
   may grow. ;)
 
 ** follow.js
@@ -29,3 +29,15 @@
     Another known problem is with [[http://github.com/][github]] -- pressing “s” seems to
     focus the “Search” field which interferes with this script if “s”
     is in the charset.
+
+** tip.js
+
+   [[file:tip.js][ToolIip]] is a script which shows information about hovered object in
+   lower left corner.  This is a replacement for tooltips and status
+   bar which has no delay (opposite to tooltips) and requires no space
+   on browser's user interface (so you can completely turn status bar
+   and address bar off).
+
+   It is also more functional in the sense that it is not limited to
+   showing only address of a link and title of an element.  It also
+   shows an alternative text and source of images.
