@@ -1,9 +1,7 @@
 * Opera UserJS Collection
 
   This is a collection of UserJS scripts for [[http://opera.com/][Opera web browser]] that
-  I have written or at least modified in big part and I am using.  As
-  a matter of fact, there are only two script now but this collection
-  may grow. ;)
+  I have written or at least modified in big part and I am using.
 
 ** follow.js
 
@@ -42,6 +40,12 @@
    It is also more functional in the sense that it is not limited to
    showing only address of a link and title of an element.  It also
    shows an alternative text and source of images.
+
+** backspace-blur.js
+
+   [[file:backspace-blur.js][Blur on backspace]] is a script which removes focus from form fields
+   when backspace is pressed and the field is empty.  This may sound
+   useless but it has proven quite handy for me.
 
 ** Installation & configuration
 
