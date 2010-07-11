@@ -41,6 +41,19 @@
    showing only address of a link and title of an element.  It also
    shows an alternative text and source of images.
 
+*** Installation & configuration
+
+    Refer to the “Installation & configure” section of this document
+    at the end.  Besides what's written there, [[file:tip.js][ToolIip]] has some other
+    configuration options as well:
+
+    First of all, “attrs” lets one specify which attributes should be
+    displayed.   Refer to the source code for description.
+
+    There's also “showElementInfo” which, if set to “true”, makes the
+    script dispay elements information in the tooltip.  The
+    information is the tag name, ID and class.
+
 ** backspace-blur.js
 
    [[file:backspace-blur.js][Blur on backspace]] is a script which removes focus from form fields
