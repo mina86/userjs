@@ -2,8 +2,8 @@
  * ==UserScript==
  * @name         ToolTip
  * @namespace    http://mina86.com/
- * @version      1.0
- * @date         2010-07-11
+ * @version      0.9
+ * @date         2010-06-17
  * @author       Michal “mina86” Nazarewicz <mina86@mina86.com>
  * @description  Shows a tooltip in lower left corner when link etc is hovered.
  * @ujs:category browser: enhancements
@@ -19,7 +19,7 @@
 
 	var style = false;
 	/* Alternativell you can leave it commented and copy this to a user CSS. */
-	style = 'table#tool-tip-text, table#tool-tip-text thead, table#tool-tip-text tbody, table#tool-tip-text tr, table#tool-tip-text tr td, table#tool-tip-text tr th { margin: 0 !important; padding: 0 !important; border: 0 none #000 !important; color: #000 !important; font-weight: normal !important; line-height: 1em !important; border-collapse: collapse !important; text-decoration: none !important; background-color: #F90 !important; width: auto !important; vertical-align: top !important; text-align: left; } table#tool-tip-text { display: none; border: 1px solid #664A00 !important; z-index: 1000 !important; position: fixed !important; left: 0 !important; bottom: 0 !important; } table#tool-tip-text tr td { padding: 1px !important; font-size: 12px !important; } table#tool-tip-text tr th { padding: 1px !important; font-size: 10px !important; background-color: #9F0 !important; } table#tool-tip-text thead tr th { background-color: #FF0 !important; }';
+	style = 'table#tool-tip-text, table#tool-tip-text thead, table#tool-tip-text tbody, table#tool-tip-text tr, table#tool-tip-text tr td, table#tool-tip-text tr th { margin: 0 !important; padding: 0 !important; border: 0 none #000 !important; color: #000 !important; font-weight: normal !important; line-height: 1em !important; border-collapse: collapse !important; text-decoration: none !important; background-color: #F90 !important; width: auto !important; vertical-align: top !important; text-align: left; } table#tool-tip-text { display: none; border: 1px solid #664A00 !important; z-index: 1000 !important; position: fixed !important; left: 0 !important; bottom: 0 !important; } table#tool-tip-text tr td { padding: 1px !important; font-size: 12px !important; } table#tool-tip-text tr th { padding: 1px !important; font-size: 10px !important; background-color: #9F0 !important; } table#tool-tip-text thead tr th { background-color: #FF0 !important; } table#tool-tip-text tfoot tr td { background-color: #999 !important; } table#tool-tip-text tfoot tr td.tool-tip-secure { background-color: #9F9 !important; }';
 
 	/*
 	 * A list of attributes to show in the tool tip.  Each element of
@@ -55,112 +55,14 @@
 	 */
 	var showElementInfo = true;
 
+	/* Set to true, if you want page URL to be dispaleyed. */
+	var showLocation = true;
+
 
 	/* No need to touch avything below. */
-	var doc = document, content = null, old_target = null;
-	var handler = function(e) {
-		/* e = e.event; */
-
-		var messages = [], count = 0, target = null, map = [ ];;
-
-		if (showElementInfo) {
-			target = e.target;
-		}
-
-		for (e = e.target; e && e.getAttribute; e = e.parentNode) {
-			for (var i = 0, l = attrs.length; i < l; ++i) {
-				var attr = e.getAttribute(attrs[i][0]);
-
-				if (!attr || (!attrs[i][2] && map['attr_' + attr])) {
-					continue;
-				}
-
-				if (map['attr_' + attr] && map['attr_' + attr] > 0) {
-					messages[map['attr_' + attr] - 1] = false;
-				}
-
-				map['attr_' + attr] = attrs[i][2] ? -1 : (count + 1);
-				messages[count++] = [ attrs[i][1], attr, attrs[i][3] ];
-			}
-
-			if (count && !target) target = e;
-		}
-		map = null;
-
-		if (target == old_target) {
-			return;
-		}
-		old_target = target;
-
-		content.style.display = 'none';
-		while (content.firstChild) {
-			content.removeChild(content.firstChild);
-		}
-
-		if (count == 0 && !showElementInfo) {
-			return;
-		}
-
-
-		if (showElementInfo) {
-			var thead = doc.createElement('thead');
-			var row = doc.createElement('tr');
-			var th  = doc.createElement('th');
-			th.setAttribute('colspan', '2');
-
-			var span = doc.createElement('span');
-			span.setAttribute('class', 'tool-tip-tagname');
-			span.innerText = target.tagName.toLowerCase();
-			th.appendChild(span);
-
-			var tmp = target.getAttribute('id');
-			if (tmp) {
-				span = doc.createElement('span');
-				span.setAttribute('class', 'tool-tip-id');
-				span.innerText = '#' + tmp;
-				th.appendChild(span);
-			}
-
-			tmp = target.getAttribute('class');
-			if (tmp) {
-				span = doc.createElement('span');
-				span.setAttribute('class', 'tool-tip-class');
-				span.innerText = '.' + tmp.replace(' ', '.');
-				th.appendChild(span);
-			}
-
-			row.appendChild(th);
-			thead.appendChild(row);
-			content.appendChild(thead);
-		}
-
-
-		var tbody = count ? doc.createElement('tbody') : null;
-		for (var i = 0; i < count; ++i) {
-			var row = doc.createElement('tr');
-			if (messages[i][2]) {
-				row.setAttribute('class', messages[i][2]);
-			}
-
-			var th  = doc.createElement('th');
-			var td  = doc.createElement('td');
-
-			th.innerText = messages[i][0];
-			td.innerText = messages[i][1];
-			row.appendChild(th);
-			row.appendChild(td);
-
-			tbody.appendChild(row);
-		}
-
-		if (tbody) {
-			content.appendChild(tbody);
-		}
-		content.style.display = 'table';
-	};
-
-
+	var doc = document;
 	doc.addEventListener('DOMContentLoaded', function(e) {
+		/* Add style */
 		if (style) {
 			style = doc.createTextNode(style);
 			if (!style) return;
@@ -178,11 +80,145 @@
 			style = null;
 		}
 
+		/* Create elements */
+		var attributes, old_target = null, updateInfo;
+		var table = doc.createElement('table');
+		table.setAttribute('id', 'tool-tip-text');
 
-		content = doc.createElement('table');
-		content.setAttribute('id', 'tool-tip-text');
-		doc.body.appendChild(content);
-		doc.body.addEventListener('mouseover', handler, false);
-		/* window.opera.addEventListener('BeforeEvent.mouseout' , handler, false); */
+		if (showElementInfo) {
+			var old_info_target = null, elementInfo;
+			updateInfo = function (e) {
+if (e == old_info_target) {
+	return;
+}
+
+old_info_target = e;
+
+while (elementInfo.firstChild) {
+	elementInfo.removeChild(elementInfo.firstChild);
+}
+
+var span = doc.createElement('span');
+span.setAttribute('class', 'tool-tip-tagname');
+span.innerText = e.tagName.toLowerCase();
+elementInfo.appendChild(span);
+
+var tmp = e.getAttribute('id');
+if (tmp) {
+	span = doc.createElement('span');
+	span.setAttribute('class', 'tool-tip-id');
+	span.innerText = '#' + tmp;
+	elementInfo.appendChild(span);
+}
+
+tmp = e.getAttribute('class');
+if (tmp) {
+	span = doc.createElement('span');
+	span.setAttribute('class', 'tool-tip-class');
+	span.innerText = '.' + tmp.replace(' ', '.');
+	elementInfo.appendChild(span);
+}
+			};
+
+			var thead = doc.createElement('thead');
+			var tr = doc.createElement('tr');
+			elementInfo = doc.createElement('th');
+			elementInfo.setAttribute('colspan', '2');
+			tr.appendChild(elementInfo);
+			updateInfo(doc.body);
+			thead.appendChild(tr);
+			table.appendChild(thead);
+		} else {
+			updateInfo = function (e) { };
+		}
+
+		attributes = doc.createElement('tbody');
+		table.appendChild(attributes);
+
+		if (showLocation) {
+			var tfoot = doc.createElement('tfoot');
+			var tr = doc.createElement('tr');
+			var td = doc.createElement('td');
+			td.setAttribute('colspan', '2');
+
+			if (window.location.protocol == 'https:') {
+				td.setAttribute('class', 'tool-tip-secure');
+			}
+
+			td.innerText = window.location.href;
+
+			tr.appendChild(td);
+			tfoot.appendChild(tr);
+			table.appendChild(tfoot);
+		}
+
+		doc.body.appendChild(table);
+		if (showLocation || showElementInfo) {
+			table.style.display = 'table';
+		}
+
+
+		/* The handler */
+		doc.body.addEventListener('mouseover', function(e) {
+var messages = [], count = 0, target = null, map = [ ];
+
+e = e.target;
+updateInfo(e);
+
+for (; e && e.getAttribute; e = e.parentNode) {
+	for (var i = 0, l = attrs.length; i < l; ++i) {
+		var attr = e.getAttribute(attrs[i][0]);
+
+		if (!attr || (!attrs[i][2] && map['attr_' + attr])) {
+			continue;
+		}
+
+		if (map['attr_' + attr] && map['attr_' + attr] > 0) {
+			messages[map['attr_' + attr] - 1] = false;
+		}
+
+		map['attr_' + attr] = attrs[i][2] ? -1 : (count + 1);
+		messages[count++] = [ attrs[i][1], attr, attrs[i][3] ];
+	}
+
+	if (count && !target) target = e;
+}
+map = null;
+
+
+if (old_target == target) {
+	return;
+}
+
+old_target = target;
+
+while (attributes.firstChild) {
+	attributes.removeChild(attributes.firstChild);
+}
+
+if (!count && !showElementInfo && !showLocation) {
+	table.style.display = 'none';
+	return;
+}
+
+for (var i = 0; i < count; ++i) {
+	var row = doc.createElement('tr');
+	if (messages[i][2]) {
+		row.setAttribute('class', messages[i][2]);
+	}
+
+	var th  = doc.createElement('th');
+	var td  = doc.createElement('td');
+
+	th.innerText = messages[i][0];
+	td.innerText = messages[i][1];
+	row.appendChild(th);
+	row.appendChild(td);
+
+	attributes.appendChild(row);
+}
+
+table.style.display = 'table';
+		}, false);
 	}, false);
 })();

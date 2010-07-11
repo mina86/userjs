@@ -54,6 +54,10 @@
     script dispay elements information in the tooltip.  The
     information is the tag name, ID and class.
 
+    Another option is “showLocation” which will make the script
+    display location of the web page.  This is handy if one has
+    disabled address bar.
+
 ** backspace-blur.js
 
    [[file:backspace-blur.js][Blur on backspace]] is a script which removes focus from form fields
