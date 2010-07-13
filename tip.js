@@ -55,8 +55,10 @@
 	 */
 	var showElementInfo = true;
 
-	/* Set to true, if you want page URL to be dispaleyed. */
-	var showLocation = true;
+	/* Set to true, if you want page URL to be dispaleyed.  Set to
+	 * 'auto' (with apostrophes) to make it disappear if there are
+	 * some attributes shown. */
+	var showLocation = 'auto';
 
 
 	/* No need to touch avything below. */
@@ -81,7 +83,7 @@
 		}
 
 		/* Create elements */
-		var attributes, old_target = null, updateInfo;
+		var attributes, location = null, old_target = null, updateInfo;
 		var table = doc.createElement('table');
 		table.setAttribute('id', 'tool-tip-text');
 
@@ -150,6 +152,10 @@ if (tmp) {
 			tr.appendChild(td);
 			tfoot.appendChild(tr);
 			table.appendChild(tfoot);
+
+			if (showLocation === 'auto') {
+					location = tfoot;
+			}
 		}
 
 		doc.body.appendChild(table);
@@ -196,8 +202,12 @@ while (attributes.firstChild) {
 	attributes.removeChild(attributes.firstChild);
 }
 
-if (!count && !showElementInfo && !showLocation) {
-	table.style.display = 'none';
+if (!count) {
+	if (!showElementInfo && !showLocation) {
+		table.style.display = 'none';
+	} else if (location) {
+		location.style.display = 'table-row-group';
+	}
 	return;
 }
 
@@ -219,6 +229,9 @@ for (var i = 0; i < count; ++i) {
 }
 
 table.style.display = 'table';
+if (location) {
+	location.style.display = 'none';
+}
 		}, false);
 	}, false);
 })();
