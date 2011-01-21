@@ -60,6 +60,9 @@
 	 * some attributes shown. */
 	var showLocation = 'auto';
 
+	if (window.parent != window) {
+		showLocation = false;
+	}
 
 	/* No need to touch avything below. */
 	var doc = document;
