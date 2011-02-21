@@ -152,18 +152,20 @@ if (tmp) {
 
 			td.innerText = window.location.href;
 
+			tfoot.setAttribute('class', 'tool-tip-visible');
+
 			tr.appendChild(td);
 			tfoot.appendChild(tr);
 			table.appendChild(tfoot);
 
 			if (showLocation === 'auto') {
-					location = tfoot;
+				location = tfoot;
 			}
 		}
 
 		doc.body.appendChild(table);
 		if (showLocation || showElementInfo) {
-			table.style.display = 'table';
+			table.setAttribute('class', 'tool-tip-visible');
 		}
 
 
@@ -207,9 +209,9 @@ while (attributes.firstChild) {
 
 if (!count) {
 	if (!showElementInfo && !showLocation) {
-		table.style.display = 'none';
+		table.setAttribute('class', 'tool-tip-hidden');
 	} else if (location) {
-		location.style.display = 'table-row-group';
+		location.setAttribute('class', 'tool-tip-visible');
 	}
 	return;
 }
@@ -231,9 +233,9 @@ for (var i = 0; i < count; ++i) {
 	attributes.appendChild(row);
 }
 
-table.style.display = 'table';
+table.setAttribute('class', 'tool-tip-visible');
 if (location) {
-	location.style.display = 'none';
+	location.setAttribute('class', 'tool-tip-hidden');
 }
 		}, false);
 	}, false);
