@@ -363,11 +363,13 @@ key: function(e) {
 		} else {
 			this.elements.removeAttribute('class');
 		}
-	} else if (this.retMode && prefix.substring(prefix.length - 1) != ' ') {
+	} else if (!this.retMode) {
+		return true;
+	} else if (prefix.substring(prefix.length - 1) != ' ') {
 		this.prefix += ' ';
 		this.update();
 	} else {
-		return true;
+		this.ret(this.retMode);
 	}
 	return false;
 }
