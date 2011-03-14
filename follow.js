@@ -402,7 +402,7 @@ key: function(e) {
 		e = e.event;
 
 		if (e.altKey || e.ctrlKey || e.metaKey || e.keyCode != e.which ||
-		    ['INPUT', 'TEXTAREA', 'SELECT'].indexOf(e.target.tagName) != -1) {
+		    ['INPUT', 'TEXTAREA', 'SELECT'].indexOf(e.target.tagName.toUpperCase()) != -1) {
 			if (follow.running) follow.stop();
 			return;
 		}
