@@ -15,11 +15,11 @@
  */
 
 (function() {
-	/* Configuration */
+	/***** Configuration *****/
 
 	var style = false;
 	/* Alternativell you can leave it commented and copy this to a user CSS. */
-	style = 'table#tool-tip-text { display: none; } @media screen, tv { table#tool-tip-text, table#tool-tip-text thead, table#tool-tip-text tbody, table#tool-tip-text tr, table#tool-tip-text tr td, table#tool-tip-text tr th { margin: 0 !important; padding: 0 !important; border: 0 none #000 !important; color: #000 !important; font-weight: normal !important; line-height: 1em !important; border-collapse: collapse !important; text-decoration: none !important; background-color: #F90 !important; width: auto !important; vertical-align: top !important; text-align: left; } table#tool-tip-text { border: 1px solid #664A00 !important; z-index: 1000 !important; position: fixed !important; left: 0 !important; bottom: 0 !important; } table#tool-tip-text.tool-tip-visible { display: table !important; } table#tool-tip-text tfoot { display: none; } table#tool-tip-text tfoot.tool-tip-visible { display: table-row-group !important; } table#tool-tip-text tr td { padding: 1px !important; font-size: 12px !important; } table#tool-tip-text tr th { padding: 1px !important; font-size: 10px !important; background-color: #9F0 !important; } table#tool-tip-text thead tr th { background-color: #FF0 !important; } table#tool-tip-text tfoot tr td { background-color: #999 !important; } table#tool-tip-text tfoot tr td.tool-tip-secure { background-color: #9F9 !important; } table#tool-tip-text tfoot tr td em { font-weight: bold !important; } }';
+	style = 'table#tool-tip-text { display: none; } @media screen, tv { table#tool-tip-text, table#tool-tip-text thead, table#tool-tip-text tbody, table#tool-tip-text tr, table#tool-tip-text tr td, table#tool-tip-text tr th { margin: 0 !important; padding: 0 !important; border: 0 none #000 !important; color: #000 !important; font-weight: normal !important; line-height: 1em !important; border-collapse: collapse !important; text-decoration: none !important; background-color: #F90 !important; width: auto !important; vertical-align: top !important; text-align: left; } table#tool-tip-text { border: 1px solid #664A00 !important; z-index: 1000 !important; position: fixed !important; left: 0 !important; bottom: 0 !important; } table#tool-tip-text.tool-tip-visible { display: table !important; } table#tool-tip-text tfoot { display: none; } table#tool-tip-text tfoot.tool-tip-visible { display: table-row-group !important; } table#tool-tip-text tr td { padding: 1px !important; font-size: 12px !important; } table#tool-tip-text tr th { padding: 1px !important; font-size: 10px !important; background-color: #9F0 !important; } table#tool-tip-text thead tr th { background-color: #FF0 !important; } table#tool-tip-text tfoot tr td { background-color: #999 !important; } table#tool-tip-text tfoot tr td.tool-tip-secure { background-color: #9F9 !important; } table#tool-tip-text tfoot tr td em { font-weight: bold !important; } table#tool-tip-text.tool-tip-keyboard-hide, table#tool-tip-text.tool-tip-keyboard-hide.tool-tip-visible { display: none !important; } }';
 
 	/*
 	 * A list of attributes to show in the tool tip.  Each element of
@@ -55,16 +55,21 @@
 	 */
 	var showElementInfo = true;
 
-	/* Set to true, if you want page URL to be dispaleyed.  Set to
+	/* Set to true if you want page URL to be dispaleyed.  Set to
 	 * 'auto' (with apostrophes) to make it disappear if there are
 	 * some attributes shown. */
 	var showLocation = 'auto';
 
+	/***** No need to touch avything below. *****/
+
 	if (window.parent != window) {
+		/* If we are in an iframe don't polute the frame
+		 * (since iframes tend to be small).  Unfortunatelly,
+		 * this also catches framesets. */
 		showLocation = false;
+		showElementInfo = false;
 	}
 
-	/* No need to touch avything below. */
 	var doc = document;
 	doc.addEventListener('DOMContentLoaded', function(e) {
 		/* Add style */
@@ -89,6 +94,19 @@
 		var attributes, location = null, old_target = null, updateInfo;
 		var table = doc.createElement('table');
 		table.setAttribute('id', 'tool-tip-text');
+
+		table.tooltip_classes = new Array();
+		table.tooltip_modClass = function(add, rem) {
+			var classes = this.tooltip_classes;
+			var idx = classes.indexOf(rem);
+			if (idx != -1) {
+				classes.splice(idx, 1);
+			}
+			if (add && (idx = classes.indexOf(add))) {
+				classes[classes.length] = add;
+			}
+			this.setAttribute('class', this.tooltip_classes.join(' '));
+		};
 
 		if (showElementInfo) {
 			var old_info_target = null, elementInfo;
@@ -165,7 +183,7 @@ if (tmp) {
 
 		doc.body.appendChild(table);
 		if (showLocation || showElementInfo) {
-			table.setAttribute('class', 'tool-tip-visible');
+			table.tooltip_modClass('tool-tip-visible', 'tool-tip-hidden');
 		}
 
 
@@ -209,7 +227,7 @@ while (attributes.firstChild) {
 
 if (!count) {
 	if (!showElementInfo && !showLocation) {
-		table.setAttribute('class', 'tool-tip-hidden');
+		table.tooltip_modClass('tool-tip-hidden', 'tool-tip-visible');
 	} else if (location) {
 		location.setAttribute('class', 'tool-tip-visible');
 	}
@@ -233,10 +251,22 @@ for (var i = 0; i < count; ++i) {
 	attributes.appendChild(row);
 }
 
-table.setAttribute('class', 'tool-tip-visible');
+table.tooltip_modClass('tool-tip-visible', 'tool-tip-hidden');
 if (location) {
 	location.setAttribute('class', 'tool-tip-hidden');
 }
 		}, false);
+
+		/* Disable on some key down events */
+		var keyHandler = function(e) {
+			if (e.ctrlKey && (e.altKey || e.metaKey)) {
+				table.tooltip_modClass('tool-tip-keyboard-hide', '');
+			} else {
+				table.tooltip_modClass('', 'tool-tip-keyboard-hide');
+			}
+		};
+		doc.body.addEventListener('keydown', keyHandler, false);
+		doc.body.addEventListener('keyup', keyHandler, false);
+
 	}, false);
 })();

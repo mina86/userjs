@@ -57,4 +57,8 @@ table#tool-tip-text tfoot tr td em {
 	font-weight: bold !important;
 }
 
+table#tool-tip-text.tool-tip-keyboard-hide, table#tool-tip-text.tool-tip-keyboard-hide.tool-tip-visible {
+	display: none !important;
+}
+
 }
