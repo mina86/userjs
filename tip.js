@@ -8,13 +8,14 @@
  * @description  Shows a tooltip in lower left corner when link etc is hovered.
  * @ujs:category browser: enhancements
  * @ujs:download http://github.com/mina86/userjs/raw/master/tip.js
+ * @exclude      *.google.com/*
  * @include      *
  * ==/UserScript==
  *
  * See documentation at <http://github.com/mina86/userjs>.
  */
 
-(function() {
+(function(W, D) {
 	/***** Configuration *****/
 
 	var style = false;
@@ -62,7 +63,7 @@
 
 	/***** No need to touch avything below. *****/
 
-	if (window.parent != window) {
+	if (W.parent != W) {
 		/* If we are in an iframe don't polute the frame
 		 * (since iframes tend to be small).  Unfortunatelly,
 		 * this also catches framesets. */
@@ -70,20 +71,19 @@
 		showElementInfo = false;
 	}
 
-	var doc = document;
-	doc.addEventListener('DOMContentLoaded', function(e) {
+	D.addEventListener('DOMContentLoaded', function(e) {
 		/* Add style */
 		if (style) {
-			style = doc.createTextNode(style);
+			style = D.createTextNode(style);
 			if (!style) return;
 
-			var styleElement = doc.createElement('style');
+			var styleElement = D.createElement('style');
 			if (!styleElement) return;
 
 			styleElement.setAttribute("type", "text/css");
 			styleElement.appendChild(style);
 
-			var head = doc.getElementsByTagName('head');
+			var head = D.getElementsByTagName('head');
 			if (!head.length) return;
 
 			head[0].appendChild(styleElement);
@@ -92,7 +92,7 @@
 
 		/* Create elements */
 		var attributes, location = null, old_target = null, updateInfo;
-		var table = doc.createElement('table');
+		var table = D.createElement('table');
 		table.setAttribute('id', 'tool-tip-text');
 
 		table.tooltip_classes = new Array();
@@ -121,14 +121,14 @@ while (elementInfo.firstChild) {
 	elementInfo.removeChild(elementInfo.firstChild);
 }
 
-var span = doc.createElement('span');
+var span = D.createElement('span');
 span.setAttribute('class', 'tool-tip-tagname');
 span.innerText = e.tagName.toLowerCase();
 elementInfo.appendChild(span);
 
 var tmp = e.getAttribute('id');
 if (tmp) {
-	span = doc.createElement('span');
+	span = D.createElement('span');
 	span.setAttribute('class', 'tool-tip-id');
 	span.innerText = '#' + tmp;
 	elementInfo.appendChild(span);
@@ -136,39 +136,39 @@ if (tmp) {
 
 tmp = e.getAttribute('class');
 if (tmp) {
-	span = doc.createElement('span');
+	span = D.createElement('span');
 	span.setAttribute('class', 'tool-tip-class');
 	span.innerText = '.' + tmp.replace(' ', '.');
 	elementInfo.appendChild(span);
 }
 			};
 
-			var thead = doc.createElement('thead');
-			var tr = doc.createElement('tr');
-			elementInfo = doc.createElement('th');
+			var thead = D.createElement('thead');
+			var tr = D.createElement('tr');
+			elementInfo = D.createElement('th');
 			elementInfo.setAttribute('colspan', '2');
 			tr.appendChild(elementInfo);
-			updateInfo(doc.body);
+			updateInfo(D.body);
 			thead.appendChild(tr);
 			table.appendChild(thead);
 		} else {
 			updateInfo = function (e) { };
 		}
 
-		attributes = doc.createElement('tbody');
+		attributes = D.createElement('tbody');
 		table.appendChild(attributes);
 
 		if (showLocation) {
-			var tfoot = doc.createElement('tfoot');
-			var tr = doc.createElement('tr');
-			var td = doc.createElement('td');
+			var tfoot = D.createElement('tfoot');
+			var tr = D.createElement('tr');
+			var td = D.createElement('td');
 			td.setAttribute('colspan', '2');
 
-			if (window.location.protocol == 'https:') {
+			if (W.location.protocol == 'https:') {
 				td.setAttribute('class', 'tool-tip-secure');
 			}
 
-			td.innerText = window.location.href;
+			td.innerText = W.location.href;
 
 			tfoot.setAttribute('class', 'tool-tip-visible');
 
@@ -181,14 +181,14 @@ if (tmp) {
 			}
 		}
 
-		doc.body.appendChild(table);
+		D.body.parentNode.appendChild(table);
 		if (showLocation || showElementInfo) {
 			table.tooltip_modClass('tool-tip-visible', 'tool-tip-hidden');
 		}
 
 
 		/* The handler */
-		doc.body.addEventListener('mouseover', function(e) {
+		D.body.addEventListener('mouseover', function(e) {
 var messages = [], count = 0, target = null, map = [ ];
 
 e = e.target;
@@ -235,13 +235,13 @@ if (!count) {
 }
 
 for (var i = 0; i < count; ++i) {
-	var row = doc.createElement('tr');
+	var row = D.createElement('tr');
 	if (messages[i][2]) {
 		row.setAttribute('class', messages[i][2]);
 	}
 
-	var th  = doc.createElement('th');
-	var td  = doc.createElement('td');
+	var th  = D.createElement('th');
+	var td  = D.createElement('td');
 
 	th.innerText = messages[i][0];
 	td.innerText = messages[i][1];
@@ -265,8 +265,8 @@ if (location) {
 				table.tooltip_modClass('', 'tool-tip-keyboard-hide');
 			}
 		};
-		doc.body.addEventListener('keydown', keyHandler, false);
-		doc.body.addEventListener('keyup', keyHandler, false);
+		D.body.addEventListener('keydown', keyHandler, false);
+		D.body.addEventListener('keyup', keyHandler, false);
 
 	}, false);
-})();
+})(window, window.document);
