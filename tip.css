@@ -1,10 +1,10 @@
-table#tool-tip-text {
+#tool-tip-text {
 	display: none;
 }
 
 @media screen, tv {
 
-table#tool-tip-text, table#tool-tip-text thead, table#tool-tip-text tbody, table#tool-tip-text tr, table#tool-tip-text tr td, table#tool-tip-text tr th {
+#tool-tip-text, #tool-tip-text thead, #tool-tip-text tbody, #tool-tip-text tr, #tool-tip-text td, #tool-tip-text th {
 	margin: 0 !important;
 	padding: 0 !important;
 	border: 0 none #000 !important;
@@ -18,42 +18,45 @@ table#tool-tip-text, table#tool-tip-text thead, table#tool-tip-text tbody, table
 	vertical-align: top !important;
 	text-align: left;
 }
-table#tool-tip-text {
+#tool-tip-text {
 	border: 1px solid #664A00 !important;
 	z-index: 1000 !important;
 	position: fixed !important;
 	left: 0 !important;
 	bottom: 0 !important;
 }
-table#tool-tip-text.tool-tip-visible {
+#tool-tip-text.tool-tip-visible {
 	display: table !important;
 }
-table#tool-tip-text tfoot {
+#tool-tip-text tfoot {
 	display: none;
 }
-table#tool-tip-text tfoot.tool-tip-visible {
+#tool-tip-text tfoot.tool-tip-visible {
 	display: table-row-group !important;
 }
-table#tool-tip-text tr td {
+#tool-tip-text tr td {
 	padding: 1px !important;
 	font-size: 12px !important;
 }
-table#tool-tip-text tr th {
+#tool-tip-text tr th {
 	padding: 1px !important;
 	font-size: 10px !important;
 	background-color: #9F0 !important;
 }
 
-table#tool-tip-text thead tr th {
+#tool-tip-text thead th {
 	background-color: #FF0 !important;
 }
-table#tool-tip-text tfoot tr td {
+#tool-tip-text tfoot td {
 	background-color: #999 !important;
 }
-table#tool-tip-text tfoot tr td.tool-tip-secure {
+#tool-tip-text tfoot:hover td {
+	padding: 0.5em !important;
+}
+#tool-tip-text tfoot td.tool-tip-secure {
 	background-color: #9F9 !important;
 }
-table#tool-tip-text tfoot tr td em {
+#tool-tip-text tfoot em {
 	font-weight: bold !important;
 }
 
