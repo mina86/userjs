@@ -259,7 +259,7 @@ if (location) {
 
 		/* Disable on some key down events */
 		var keyHandler = function(e) {
-			if (e.ctrlKey && (e.altKey || e.metaKey)) {
+			if (e.ctrlKey) { // && (e.altKey || e.metaKey)) {
 				table.tooltip_modClass('tool-tip-keyboard-hide', '');
 			} else {
 				table.tooltip_modClass('', 'tool-tip-keyboard-hide');
