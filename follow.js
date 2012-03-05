@@ -246,25 +246,25 @@ update: function() {
 
 	/* Filter hints */
 	for (var i = list.length; i; ) {
-		var item = list[--i], match = this.match(item.label), class;
+		var item = list[--i], match = this.match(item.label), cssClass;
 		if (match === false) {
 			item.match = false;
-			class = 'follow-link-hide';
+			cssClass = 'follow-link-hide';
 			match = '';
 		} else if (match === '') {
 			item.match = true;
-			class = 'follow-link-match';
+			cssClass = 'follow-link-match';
 			++count;
 			el = item[0].el;
 		} else {
 			item.match = false;
-			class = 'follow-link-hint';
+			cssClass = 'follow-link-hint';
 		}
 
 		var j = item.length;
 		do {
 			var e = item[--j];
-			e.hint.setAttribute('class', class);
+			e.hint.setAttribute('class', cssClass);
 			e.hint.innerText = match;
 		} while (j);
 	}
