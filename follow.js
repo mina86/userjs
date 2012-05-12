@@ -10,7 +10,6 @@
  *               can type to use the element.
  * @ujs:category browser: enhancements
  * @ujs:download http://github.com/mina86/userjs/raw/master/follow.js
- * @include      *
  * ==/UserScript==
  *
  * Inspired by follow.js form uzbl-browser.
