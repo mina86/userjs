@@ -38,18 +38,18 @@
  * See documentation at <http://github.com/mina86/userjs>.
  */
 
-(function() {
+(function(D, W) {
 	/* Configuration */
 	var retMode = false, charset, style = false;
 
 
 	/* For dvorak, only right hand */
-	/* charset = 'htnsdgfcrlmwvzb-/@'; */
+	charset = 'htnsdgfcrlmwvzb-/@';
 	/* For dvorak, both hands */
 	/* charset = 'htnsueoadgfipycrl.,\'mbkxwvzjq;-/@'; */
 
 	/* For qwerty, only right hand */
-	charset = 'jkl;huyiopmn,./\'[]';
+	/* charset = 'jkl;huyiopmn,./\'[]'; */
 	/* For qwerty, both hands */
 	/* charset = 'jkl;fdsahuygrtiopewqmnvb,./cxz\'[]'; */
 
@@ -58,12 +58,10 @@
 
 
 	/* Alternativell you can leave it commented and copy this to a user CSS. */
-	style = 'div.follow-link-hide, div.follow-link-hint, div.follow-link-match, div.follow-link-prompt { letter-spacing: 0.1em !important; display: inline !important; background-color: #B9FF00 !important; border: 1px solid #4A6600 !important; color: black !important; font-size: 10px !important; font-weight: bold !important; line-height: 1em !important; margin: 0px !important; width: auto !important; padding: 1px !important; position: absolute !important; z-index: 1000 !important; text-decoration: none !important; } div.follow-link-prompt { background-color: #FFB900 !important; border-color: #664A00 !important; position: fixed !important; left: 0 !important; bottom: 0 !important; } div.follow-link-match { background-color: #00B9FF !important; border-color: #004A66 !important; content: "\\00A0" !important; } div.follow-link-hide { display: none !important; } div.follow-link-retmode div.follow-link-prompt { background-color: #f00 !important; } div.follow-link-retmode div.follow-link-hint { background-color: #FF0 !important; }'
+	/* style = 'div.follow-link-hide, div.follow-link-hint, div.follow-link-match, div.follow-link-prompt { letter-spacing: 0.1em !important; display: inline !important; background-color: #B9FF00 !important; border: 1px solid #4A6600 !important; color: black !important; font-size: 10px !important; font-weight: bold !important; line-height: 1em !important; margin: 0px !important; width: auto !important; padding: 1px !important; position: absolute !important; z-index: 1000 !important; text-decoration: none !important; } div.follow-link-prompt { background-color: #FFB900 !important; border-color: #664A00 !important; position: fixed !important; left: 0 !important; bottom: 0 !important; } div.follow-link-match { background-color: #00B9FF !important; border-color: #004A66 !important; content: "\\00A0" !important; } div.follow-link-hide { display: none !important; } div.follow-link-retmode div.follow-link-prompt { background-color: #f00 !important; } div.follow-link-retmode div.follow-link-hint { background-color: #FF0 !important; }' */
 
 
 	/* No need to touch avything below. */
-	var doc = document;
-
 	/* Main object */
 	var follow = {
 
@@ -75,17 +73,81 @@ elements: null,
 prompt: null,
 retMode: false,
 background: false,
+clickable: [],
+
+
+/* Record that an element has "click" listener. */
+recordClickable: function(el) {
+	var tagName = el.tagName.toUpperCase()
+
+	if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].indexOf(tagName) != -1) {
+		/* All of those elements are included uncodnitionally
+		 * every time, so there is no need to track them in
+		 * the clicable list. */
+	} else if (tagName == 'A') {
+		/* All links are scanned anyway and either href or
+		 * onclick is tested, so instead of tracking links in
+		 * clicable list, it's enough to make sure that
+		 * onclick is set. */
+		if (!el.onclick) {
+			el.onclick = function(e) {
+				return true;
+			};
+		}
+	} else if (follow.clickable.indexOf(this) == -1) {
+		follow.clickable.push(this);
+	}
+},
+
+
+/* Scan for clicable elemenst of given tag name. */
+scanClickable: function(elements, areLinks, list, getVisibleBox) {
+	var i = elements.length, j, n = list.length;
+	while (i) {
+		var el = elements[--i];
+
+		if (areLinks &&
+		    (!el.href || el.href == location.href) &&
+		    !el.onclick) {
+			continue;
+		}
+
+		var box = getVisibleBox(el);
+		if (!box) {
+			continue;
+		}
+
+		var item = { el: el, box: box };
+
+		if (areLinks && !el.onclick) {
+			for (j = 0; j < n && list[j][0].el.href != el.href; ++j) {
+				/* nop */
+			}
+
+			if (j < n) {
+				list[j].push(item);
+				continue;
+			}
+		}
+
+		list.push([item]);
+		++n;
+	}
+},
 
 
 /* Start follow script */
 run: function() {
-	this.stop();
-	var list = [], i, j, el, item, n = 0;
+	var list, el, item, i, j, n, cmp, label, m, r, j, u;
 
-	var wLeft   = window.pageXOffset;
-	var wTop    = window.pageYOffset;
-	var wRight  = wLeft + window.innerWidth;
-	var wBottom = wTop  + window.innerHeight;
+	this.stop();
+	list = [];
+
+	/* Get visible box of an element. */
+	wLeft   = W.pageXOffset;
+	wTop    = W.pageYOffset;
+	wRight  = wLeft + W.innerWidth;
+	wBottom = wTop  + W.innerHeight;
 
 	var getVisibleBox = function(el) {
 		var top    = el.offsetTop;
@@ -98,11 +160,11 @@ run: function() {
 		var bottom = top  + el.offsetHeight;
 
 		if ((top    >= wBottom) || (left   >= wRight ) ||
-			(bottom <= wTop   ) || (right  <= wLeft  )) {
+		    (bottom <= wTop   ) || (right  <= wLeft  )) {
 			return false;
 		}
 
-		for (; el != doc; el = el.parentNode) {
+		for (; el != D; el = el.parentNode) {
 			if (!el || !el.parentNode || (el.style && (el.style.display == 'none' || el.style.visibility == 'hidden'))) {
 				return false;
 			}
@@ -116,64 +178,47 @@ run: function() {
 		return [top, left, right, bottom];
 	};
 
-	/* Get elements */
-	for (i = doc.links.length; i; ) {
-		el = doc.links[--i];
+	/* Get all clicable and visible elements. */
+	this.scanClickable(D.getElementsByTagName('A'), true, list, getVisibleBox);
+	this.scanClickable(D.getElementsByTagName('INPUT'), false, list, getVisibleBox);
+	this.scanClickable(D.getElementsByTagName('TEXTAREA'), false, list, getVisibleBox);
+	this.scanClickable(D.getElementsByTagName('SELECT'), false, list, getVisibleBox);
+	this.scanClickable(D.getElementsByTagName('BUTTON'), false, list, getVisibleBox);
+	this.scanClickable(this.clickable, false, list, getVisibleBox);
 
-		var href = el.href;
-		if (!href || href == location.href) {
-			continue;
-		}
-
-		var box = getVisibleBox(el);
-		if (!box) {
-			continue;
-		}
-
-		for (j = 0; j < n && list[j][0].el.href != href; ++j) {
-			/* nop */
-		}
-
-		item = { el: el, box: box };
-		if (j == n) {
-			list[n++] = [ item ];
-		} else {
-			list[j][list[j].length] = item;
-		}
-	}
-
-	for (i = doc.forms.length; i; ) {
-		var els = doc.forms[--i].elements;
-		for (j = els.length; j; ) {
-			el = els[--j];
-			if (['INPUT', 'TEXTAREA', 'SELECT'].indexOf(el.tagName) == -1) {
-				continue;
-			}
-
-			var box = getVisibleBox(el);
-			if (box) {
-				list[n++] = [ { el: el, box: box } ];
-			}
-		}
-	}
-
-	if (!list.length) {
+	n = list.length;
+	if (!n) {
 		return;
 	}
 
+	/* Sort by position in document tree. */
+	if (D.sourceIndex) {
+		cmp = function(a, b) {
+			return a.sourceIndex - b.sourceIndex;
+		};
+	} else if (D.compareDocumentPosition) {
+		cmp = function(a, b) {
+			return 3 - (a.compareDocumentPosition(b) & 6);
+		};
+	}
+	for (i = n; i; ) {
+		list[--i].sort(function(a, b) {
+			return cmp(a.el, b.el);
+		});
+	}
+	list.sort(function(a, b) { return cmp(a[0].el, b[0].el); });
+
 	/* Assign labels & hints */
-	var elements = doc.createElement('div');
+	var elements = D.createElement('div');
 	if (this.retMode) {
 		elements.setAttribute('class', 'follow-link-retmode');
 	}
 
-	var chars = charset.length;
-	i = n;
+	var chars = charset.length, i = n;
 	do {
 		item = list[--i];
 
-		var label = '', m = 1, r = 0;
-		j = n - i - 1;
+		var label = '', m = 1, r = 0, j = n - i - 1;
 		do {
 			var u = j % chars;
 			j = Math.floor(j / chars);
@@ -188,7 +233,7 @@ run: function() {
 		j = item.length;
 		do {
 			el = item[--j];
-			var hint = doc.createElement('div');
+			var hint = D.createElement('div');
 			hint.setAttribute('class', 'follow-link-hint');
 			hint.setAttribute('style', 'left: ' + el.box[1] + 'px; top: ' + el.box[0] + 'px');
 			elements.appendChild(hint);
@@ -196,12 +241,11 @@ run: function() {
 		} while (j);
 	} while (i);
 
-
-	var prompt = doc.createElement('div');
+	var prompt = D.createElement('div');
 	prompt.setAttribute('class', 'follow-link-prompt');
 	elements.appendChild(prompt);
 
-	doc.body.appendChild(elements);
+	D.body.appendChild(elements);
 
 	/* Run */
 	this.running = true;
@@ -294,11 +338,11 @@ click: function(el, background) {
 	} else if (name == 'TEXTAREA' || name == 'SELECT') {
 		el.focus();
 		el.select();
-	} else if (background) {
-		window.open(el.href, '_blank').blur();
+	} else if (background && el.href) {
+		W.open(el.href, '_blank').blur();
 	} else {
 		el.click();
-		/* window.location = el.href; */
+		/* W.location = el.href; */
 	}
 },
 
@@ -375,19 +419,31 @@ key: function(e) {
 	};
 
 
+	/* Overwrite addEventListener() to catch everything that is
+	 * clickable. */
+	var orig_addEventListener = Node.prototype.addEventListener;
+	Node.prototype.addEventListener = function(type, listener, useCapture) {
+		type = type.toLowerCase();
+		if (type == 'click' || type == 'mousedown') {
+			follow.recordClickable(this);
+		}
+		return orig_addEventListener.call(this, type, listener, useCapture);
+	};
+
+
 	/* Add stylesheet */
 	if (style) {
-		doc.addEventListener('DOMContentLoaded', function(e) {
-			style = doc.createTextNode(style);
+		D.addEventListener('DOMContentLoaded', function(e) {
+			style = D.createTextNode(style);
 			if (!style) return;
 
-			var styleElement = doc.createElement('style');
+			var styleElement = D.createElement('style');
 			if (!styleElement) return;
 
 			styleElement.setAttribute("type", "text/css");
 			styleElement.appendChild(style);
 
-			var head = doc.getElementsByTagName('head');
+			var head = D.getElementsByTagName('head');
 			if (!head.length) return;
 
 			head[0].appendChild(styleElement);
@@ -397,7 +453,7 @@ key: function(e) {
 
 
 	/* Handle keyboard input */
-	window.opera.addEventListener('BeforeEvent.keypress', function(e) {
+	W.opera.addEventListener('BeforeEvent.keypress', function(e) {
 		e = e.event;
 
 		if (e.altKey || e.ctrlKey || e.metaKey || e.keyCode != e.which ||
@@ -413,7 +469,7 @@ key: function(e) {
 		} else if (e.keyCode == 102 || e.keyCode == 70) {
 			follow.retMode = e.shiftKey == !retMode;
 			follow.run();
-			if (this.running) {
+			if (follow.running) {
 				return;
 			}
 		} else {
@@ -424,9 +480,9 @@ key: function(e) {
 
 
 	/* Cancel on click */
-	window.opera.addEventListener('BeforeEvent.click', function (e) {
+	W.opera.addEventListener('BeforeEvent.click', function (e) {
 		if (follow.running) {
 			follow.stop();
 		}
 	}, false);
-})();
+})(document, window);
