@@ -78,6 +78,9 @@ clickable: [],
 
 /* Record that an element has "click" listener. */
 recordClickable: function(el) {
+	if (!el.tagName) {
+		return;
+	}
 	var tagName = el.tagName.toUpperCase()
 
 	if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].indexOf(tagName) != -1) {
